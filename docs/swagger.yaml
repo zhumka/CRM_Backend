@@ -1,0 +1,1414 @@
+basePath: /api/v1
+definitions:
+  handler.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  model.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  model.Category:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.CategoryInput:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+    required:
+    - name
+    type: object
+  model.GenerateSalesReportInput:
+    properties:
+      from:
+        type: string
+      title:
+        maxLength: 150
+        type: string
+      to:
+        type: string
+    type: object
+  model.Invoice:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      issued_date:
+        type: string
+      number:
+        type: string
+      purchase_request_id:
+        type: integer
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.InvoiceInput:
+    properties:
+      amount:
+        minimum: 0
+        type: number
+      number:
+        maxLength: 50
+        type: string
+      purchase_request_id:
+        type: integer
+      status:
+        enum:
+        - unpaid
+        - paid
+        - void
+        type: string
+    required:
+    - number
+    type: object
+  model.LoginInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  model.Product:
+    properties:
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      supplier_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.ProductInput:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      price:
+        minimum: 0
+        type: number
+      supplier_id:
+        type: integer
+    required:
+    - name
+    type: object
+  model.PurchaseRequest:
+    properties:
+      comment:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.PurchaseRequestInput:
+    properties:
+      comment:
+        type: string
+      product_id:
+        type: integer
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  model.PurchaseStatusInput:
+    properties:
+      status:
+        enum:
+        - new
+        - in_progress
+        - approved
+        - rejected
+        - completed
+        type: string
+    required:
+    - status
+    type: object
+  model.RegisterInput:
+    properties:
+      password:
+        maxLength: 72
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  model.Report:
+    properties:
+      category_id:
+        type: integer
+      content:
+        type: string
+      created_at:
+        type: string
+      created_date:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.ReportInput:
+    properties:
+      category_id:
+        type: integer
+      content:
+        type: string
+      title:
+        maxLength: 150
+        type: string
+    required:
+    - title
+    type: object
+  model.SalesAnalytics:
+    properties:
+      from:
+        type: string
+      invoice_count:
+        type: integer
+      paid_amount:
+        type: number
+      to:
+        type: string
+      total_amount:
+        type: number
+      unpaid_amount:
+        type: number
+    type: object
+  model.StatusCount:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  model.Summary:
+    properties:
+      total_categories:
+        type: integer
+      total_invoices:
+        type: integer
+      total_products:
+        type: integer
+      total_purchase_requests:
+        type: integer
+      total_revenue:
+        type: number
+      total_suppliers:
+        type: integer
+      total_users:
+        type: integer
+    type: object
+  model.Supplier:
+    properties:
+      address:
+        type: string
+      contact_name:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.SupplierInput:
+    properties:
+      address:
+        type: string
+      contact_name:
+        maxLength: 100
+        type: string
+      email:
+        maxLength: 100
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      phone:
+        maxLength: 20
+        type: string
+    required:
+    - name
+    type: object
+  model.TopProduct:
+    properties:
+      name:
+        type: string
+      product_id:
+        type: integer
+      request_count:
+        type: integer
+      total_quantity:
+        type: integer
+    type: object
+  model.UpdateUserInput:
+    properties:
+      password:
+        maxLength: 72
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+    type: object
+  model.User:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: CRM Backend
+  description: |-
+    Бэкенд CRM-системы для предприятия оптово-розничной торговли:
+    управление продуктами, категориями, поставщиками, заявками на закупку,
+    счетами-фактурами, аналитикой и отчётами.
+  license:
+    name: MIT
+  termsOfService: http://swagger.io/terms/
+  title: CRM API
+  version: "1.0"
+paths:
+  /analytics/purchase-requests:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.StatusCount'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Количество заявок по статусам
+      tags:
+      - analytics
+  /analytics/sales:
+    get:
+      parameters:
+      - description: Дата с (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: Дата по (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SalesAnalytics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Финансовая аналитика за период
+      tags:
+      - analytics
+  /analytics/summary:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Summary'
+      security:
+      - BearerAuth: []
+      summary: Сводные KPI
+      tags:
+      - analytics
+  /analytics/top-products:
+    get:
+      parameters:
+      - description: Сколько вернуть (по умолчанию 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TopProduct'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Самые востребованные продукты
+      tags:
+      - analytics
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Проверяет учётные данные и возвращает JWT
+      parameters:
+      - description: Логин и пароль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Вход в систему
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя с ролью user и возвращает JWT
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /categories:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Category'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список категорий
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные категории
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.CategoryInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Category'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать категорию
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      parameters:
+      - description: ID категории
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить категорию
+      tags:
+      - categories
+    get:
+      parameters:
+      - description: ID категории
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Category'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить категорию
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID категории
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные категории
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.CategoryInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Category'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить категорию
+      tags:
+      - categories
+  /invoices:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Invoice'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список счетов-фактур
+      tags:
+      - invoices
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные счёта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.InvoiceInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Invoice'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать счёт-фактуру
+      tags:
+      - invoices
+  /invoices/{id}:
+    delete:
+      parameters:
+      - description: ID счёта
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить счёт-фактуру
+      tags:
+      - invoices
+    get:
+      parameters:
+      - description: ID счёта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Invoice'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить счёт-фактуру
+      tags:
+      - invoices
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID счёта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные счёта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.InvoiceInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Invoice'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить счёт-фактуру
+      tags:
+      - invoices
+  /me:
+    get:
+      description: Возвращает данные авторизованного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Текущий пользователь
+      tags:
+      - auth
+  /products:
+    get:
+      parameters:
+      - description: Фильтр по категории
+        in: query
+        name: category_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Product'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список продуктов
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные продукта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать продукт
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить продукт
+      tags:
+      - products
+    get:
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить продукт
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные продукта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить продукт
+      tags:
+      - products
+  /purchase-requests:
+    get:
+      description: Администратор видит все заявки, пользователь — только свои
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.PurchaseRequest'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список заявок на закупку
+      tags:
+      - purchase-requests
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные заявки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.PurchaseRequestInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.PurchaseRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать заявку на закупку
+      tags:
+      - purchase-requests
+  /purchase-requests/{id}:
+    delete:
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить заявку
+      tags:
+      - purchase-requests
+    get:
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PurchaseRequest'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить заявку
+      tags:
+      - purchase-requests
+  /purchase-requests/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Доступно только администратору
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новый статус
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.PurchaseStatusInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PurchaseRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Сменить статус заявки
+      tags:
+      - purchase-requests
+  /reports:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Report'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список отчётов
+      tags:
+      - reports
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные отчёта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.ReportInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Report'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать отчёт вручную
+      tags:
+      - reports
+  /reports/{id}:
+    delete:
+      parameters:
+      - description: ID отчёта
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить отчёт
+      tags:
+      - reports
+    get:
+      parameters:
+      - description: ID отчёта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Report'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить отчёт
+      tags:
+      - reports
+  /reports/{id}/export:
+    get:
+      description: Отдаёт содержимое отчёта как CSV-файл (UTF-8 BOM, для Excel)
+      parameters:
+      - description: ID отчёта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: CSV-файл
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Экспорт отчёта в CSV
+      tags:
+      - reports
+  /reports/generate-sales:
+    post:
+      consumes:
+      - application/json
+      description: Генерирует отчёт за период на основе реальной аналитики и сохраняет
+        его (содержимое — CSV)
+      parameters:
+      - description: Период (поля опциональны)
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.GenerateSalesReportInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Report'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Сформировать отчёт о продажах
+      tags:
+      - reports
+  /suppliers:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Supplier'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список поставщиков
+      tags:
+      - suppliers
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные поставщика
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.SupplierInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Supplier'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать поставщика
+      tags:
+      - suppliers
+  /suppliers/{id}:
+    delete:
+      parameters:
+      - description: ID поставщика
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить поставщика
+      tags:
+      - suppliers
+    get:
+      parameters:
+      - description: ID поставщика
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Supplier'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить поставщика
+      tags:
+      - suppliers
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID поставщика
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные поставщика
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.SupplierInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Supplier'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить поставщика
+      tags:
+      - suppliers
+  /users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.User'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные пользователя (можно задать роль)
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать пользователя
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить пользователя
+      tags:
+      - users
+    get:
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить пользователя
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Меняет пароль и/или роль
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить пользователя
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: 'Введите токен в формате: Bearer <token>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Аутентификация и регистрация
+  name: auth
+- description: Управление пользователями (только администратор)
+  name: users
+- description: Категории продукции
+  name: categories
+- description: Поставщики
+  name: suppliers
+- description: Продукты
+  name: products
+- description: Заявки на закупку
+  name: purchase-requests
+- description: Счета-фактуры
+  name: invoices
+- description: Аналитика и KPI
+  name: analytics
+- description: Отчёты (формирование и экспорт)
+  name: reports

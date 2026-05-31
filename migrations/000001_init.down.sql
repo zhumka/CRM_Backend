@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS invoices;
+DROP TABLE IF EXISTS purchase_requests;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS suppliers;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;

@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: crm_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-crm}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-crm}
+      POSTGRES_DB: ${DB_NAME:-crm}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-crm} -d ${DB_NAME:-crm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: crm_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      HTTP_PORT: "8080"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER:-crm}
+      DB_PASSWORD: ${DB_PASSWORD:-crm}
+      DB_NAME: ${DB_NAME:-crm}
+      DB_SSLMODE: disable
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_TTL_HOURS: "24"
+      GIN_MODE: release
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      SEED_DEMO: ${SEED_DEMO:-true}
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
+
+volumes:
+  pgdata:

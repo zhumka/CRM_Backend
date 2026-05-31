@@ -1,0 +1,7 @@
+.env
+/crm
+/bin/
+*.exe
+*.test
+*.out
+vendor/

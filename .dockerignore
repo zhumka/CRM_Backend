@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+.env
+*.md
+bin/
+*.exe
+*.test
+*.out
+Dzhumaeva_Adel'.docx
+docker-compose*.yml
