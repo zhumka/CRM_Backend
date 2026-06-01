@@ -180,41 +180,43 @@ curl -X POST http://localhost:8080/api/v1/products \
 
 ## CI/CD (GitHub Actions)
 
-В `.github/workflows/` два пайплайна:
+Один пайплайн `.github/workflows/ci.yml` (CI/CD), запускается на push/PR в `master`:
 
-- **`ci.yml`** — на каждый push/PR в `main`: проверка `gofmt`, `go vet`, сборка,
-  `go test -race` и сборка Docker-образа (без публикации).
-- **`deploy.yml`** — на push в `main` / тег `v*` / вручную: сборка образа,
-  публикация в **GHCR** (`ghcr.io/<owner>/<repo>`) и деплой на сервер по SSH
-  (`docker compose -f docker-compose.prod.yml pull && up -d`).
+- **test** — `gofmt`, `go vet`, `go build`, `go test -race`.
+- **docker** — пробная сборка Docker-образа (валидация Dockerfile).
+- **deploy** — только при push в `master` и после успешных `test` + `docker`:
+  заходит на сервер по SSH и выполняет
+  `cd ~/crm && git fetch && git reset --hard origin/master && docker compose up --build -d`.
 
-### Подготовка сервера (один раз)
+Образ собирается прямо на сервере (тем же `docker-compose.yml`, что и при ручном
+запуске). GHCR не используется. Файл `.env` живёт на сервере и в Git не попадает —
+поэтому секреты приложения в GitHub не нужны, только доступ по SSH.
 
-```bash
-# На сервере: установлены docker + docker compose plugin
-mkdir -p /opt/crm        # путь = секрет DEPLOY_PATH
-```
+### Что нужно настроить (один раз)
 
-Файл `docker-compose.prod.yml` копируется на сервер автоматически; `.env`
-формируется пайплайном из секретов при каждом деплое.
+1. **SSH-ключ для GitHub Actions.** На своём ПК:
+   ```bash
+   ssh-keygen -t ed25519 -C "github-deploy" -f deploy_key
+   ```
+   Публичный ключ добавить на сервер:
+   ```bash
+   ssh-copy-id -i deploy_key.pub root@<сервер>
+   # или вручную дописать deploy_key.pub в ~/.ssh/authorized_keys на сервере
+   ```
 
-### Секреты репозитория (Settings → Secrets and variables → Actions)
+2. **Секреты репозитория** (Settings → Secrets and variables → Actions → New secret):
 
-| Секрет | Назначение |
-|--------|-----------|
-| `SSH_HOST` | адрес сервера |
-| `SSH_USER` | пользователь SSH |
-| `SSH_KEY` | приватный SSH-ключ (весь файл) |
-| `SSH_PORT` | порт SSH (опц., по умолчанию 22) |
-| `DEPLOY_PATH` | каталог на сервере, напр. `/opt/crm` |
-| `JWT_SECRET` | секрет для JWT |
-| `DB_PASSWORD` | пароль PostgreSQL |
-| `ADMIN_PASSWORD` | пароль администратора |
-| `DB_USER`, `DB_NAME`, `ADMIN_USERNAME`, `HTTP_PORT` | опционально (есть значения по умолчанию) |
-| `GHCR_TOKEN` | PAT с `read:packages` для `docker login` на сервере (можно не задавать, если сделать GHCR-пакет публичным) |
+   | Секрет | Значение |
+   |--------|----------|
+   | `SSH_HOST` | адрес сервера (например `165.245.241.121`) |
+   | `SSH_USER` | пользователь SSH (например `root`) |
+   | `SSH_KEY`  | приватный ключ `deploy_key` (весь файл целиком) |
+   | `SSH_PORT` | порт SSH (опц., по умолчанию 22) |
 
-Образ публикуется в GHCR с тегами `:latest` и `:<git-sha>`; на сервер деплоится
-неизменяемый тег по SHA коммита.
+3. На сервере проект уже склонирован в `~/crm`, есть `.env` и запущенные контейнеры.
+
+После этого любой `git push` в `master` автоматически прогоняет проверки и,
+если они зелёные, обновляет приложение на сервере.
 
 ## Что дальше (вне текущей итерации)
 

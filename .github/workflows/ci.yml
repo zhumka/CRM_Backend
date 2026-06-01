@@ -1,10 +1,11 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -54,3 +55,25 @@ jobs:
           tags: crm:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to server
+    needs: [test, docker]
+    # Деплоим только при push в master (не на PR), после успешных проверок.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH (git pull + rebuild)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd ~/crm
+            git fetch --all
+            git reset --hard origin/master
+            docker compose up --build -d
+            docker image prune -f
