@@ -51,6 +51,8 @@ definitions:
         type: number
       created_at:
         type: string
+      due_date:
+        type: string
       id:
         type: integer
       issued_date:
@@ -76,9 +78,10 @@ definitions:
         type: integer
       status:
         enum:
-        - unpaid
+        - draft
+        - issued
         - paid
-        - void
+        - overdue
         type: string
     required:
     - number
@@ -107,8 +110,14 @@ definitions:
         type: string
       price:
         type: number
+      stock:
+        type: integer
       supplier_id:
         type: integer
+      tax_rate:
+        type: number
+      unit:
+        type: string
       updated_at:
         type: string
     type: object
@@ -124,19 +133,32 @@ definitions:
       price:
         minimum: 0
         type: number
+      stock:
+        minimum: 0
+        type: integer
       supplier_id:
         type: integer
+      tax_rate:
+        minimum: 0
+        type: number
+      unit:
+        maxLength: 20
+        type: string
     required:
     - name
     type: object
   model.PurchaseRequest:
     properties:
+      client_name:
+        type: string
       comment:
         type: string
       created_at:
         type: string
       id:
         type: integer
+      number:
+        type: string
       product_id:
         type: integer
       quantity:
@@ -150,6 +172,9 @@ definitions:
     type: object
   model.PurchaseRequestInput:
     properties:
+      client_name:
+        maxLength: 150
+        type: string
       comment:
         type: string
       product_id:
@@ -165,17 +190,25 @@ definitions:
     properties:
       status:
         enum:
-        - new
-        - in_progress
+        - draft
+        - pending
+        - checking
         - approved
-        - rejected
+        - ordered
         - completed
+        - rejected
         type: string
     required:
     - status
     type: object
   model.RegisterInput:
     properties:
+      email:
+        maxLength: 150
+        type: string
+      full_name:
+        maxLength: 150
+        type: string
       password:
         maxLength: 72
         minLength: 6
@@ -221,6 +254,49 @@ definitions:
         type: string
     required:
     - title
+    type: object
+  model.Sale:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      installation_status:
+        type: string
+      invoice_id:
+        type: integer
+      product_name:
+        type: string
+      quantity:
+        type: integer
+      sold_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.SaleInput:
+    properties:
+      amount:
+        minimum: 0
+        type: number
+      installation_status:
+        enum:
+        - not_required
+        - scheduled
+        - completed
+        type: string
+      invoice_id:
+        type: integer
+      product_name:
+        maxLength: 150
+        type: string
+      quantity:
+        minimum: 0
+        type: integer
+    required:
+    - product_name
     type: object
   model.SalesAnalytics:
     properties:
@@ -299,6 +375,34 @@ definitions:
     required:
     - name
     type: object
+  model.Tax:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      rate:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  model.TaxInput:
+    properties:
+      active:
+        type: boolean
+      name:
+        maxLength: 100
+        type: string
+      rate:
+        minimum: 0
+        type: number
+    required:
+    - name
+    type: object
   model.TopProduct:
     properties:
       name:
@@ -310,8 +414,42 @@ definitions:
       total_quantity:
         type: integer
     type: object
+  model.Unit:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      short_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.UnitInput:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      short_name:
+        maxLength: 20
+        type: string
+    required:
+    - name
+    type: object
   model.UpdateUserInput:
     properties:
+      email:
+        maxLength: 150
+        type: string
+      full_name:
+        maxLength: 150
+        type: string
       password:
         maxLength: 72
         minLength: 6
@@ -321,14 +459,25 @@ definitions:
         - admin
         - user
         type: string
+      status:
+        enum:
+        - active
+        - blocked
+        type: string
     type: object
   model.User:
     properties:
       created_at:
         type: string
+      email:
+        type: string
+      full_name:
+        type: string
       id:
         type: integer
       role:
+        type: string
+      status:
         type: string
       updated_at:
         type: string
@@ -1141,6 +1290,122 @@ paths:
       summary: Сформировать отчёт о продажах
       tags:
       - reports
+  /sales:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Sale'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список продаж
+      tags:
+      - sales
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.SaleInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Sale'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать продажу
+      tags:
+      - sales
+  /sales/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить продажу
+      tags:
+      - sales
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Sale'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить продажу
+      tags:
+      - sales
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.SaleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Sale'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить продажу
+      tags:
+      - sales
   /suppliers:
     get:
       produces:
@@ -1257,6 +1522,238 @@ paths:
       summary: Обновить поставщика
       tags:
       - suppliers
+  /taxes:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Tax'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список налоговых ставок
+      tags:
+      - taxes
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.TaxInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Tax'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать налоговую ставку
+      tags:
+      - taxes
+  /taxes/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить налоговую ставку
+      tags:
+      - taxes
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Tax'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить налоговую ставку
+      tags:
+      - taxes
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.TaxInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Tax'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить налоговую ставку
+      tags:
+      - taxes
+  /units:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Unit'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Список единиц измерения
+      tags:
+      - units
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.UnitInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Unit'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать единицу измерения
+      tags:
+      - units
+  /units/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить единицу измерения
+      tags:
+      - units
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Unit'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить единицу измерения
+      tags:
+      - units
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.UnitInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Unit'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить единицу измерения
+      tags:
+      - units
   /users:
     get:
       produces:

@@ -21,11 +21,11 @@ func NewInvoiceRepository(db *sqlx.DB) *InvoiceRepository {
 
 func (r *InvoiceRepository) Create(ctx context.Context, inv *model.Invoice) error {
 	const q = `
-		INSERT INTO invoices (number, purchase_request_id, amount, status)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, issued_date, created_at, updated_at`
+		INSERT INTO invoices (number, purchase_request_id, amount, status, due_date)
+		VALUES ($1, $2, $3, $4, CURRENT_DATE + INTERVAL '14 days')
+		RETURNING id, issued_date, due_date, created_at, updated_at`
 	err := r.db.QueryRowxContext(ctx, q, inv.Number, inv.PurchaseRequestID, inv.Amount, inv.Status).
-		Scan(&inv.ID, &inv.IssuedDate, &inv.CreatedAt, &inv.UpdatedAt)
+		Scan(&inv.ID, &inv.IssuedDate, &inv.DueDate, &inv.CreatedAt, &inv.UpdatedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return model.ErrAlreadyExists

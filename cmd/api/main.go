@@ -86,6 +86,9 @@ func main() {
 	invoiceRepo := repository.NewInvoiceRepository(db)
 	analyticsRepo := repository.NewAnalyticsRepository(db)
 	reportRepo := repository.NewReportRepository(db)
+	taxRepo := repository.NewTaxRepository(db)
+	unitRepo := repository.NewUnitRepository(db)
+	saleRepo := repository.NewSaleRepository(db)
 
 	// Слой бизнес-логики.
 	jwtManager := jwtutil.NewManager(cfg.JWTSecret, cfg.JWTTTL)
@@ -103,6 +106,9 @@ func main() {
 		Invoices:   service.NewInvoiceService(invoiceRepo),
 		Analytics:  analyticsService,
 		Reports:    service.NewReportService(reportRepo, analyticsService),
+		Taxes:      service.NewTaxService(taxRepo),
+		Units:      service.NewUnitService(unitRepo),
+		Sales:      service.NewSaleService(saleRepo),
 	}
 
 	// Создаём администратора по умолчанию при первом запуске.
@@ -114,7 +120,7 @@ func main() {
 
 	// Наполнение демо-данными (идемпотентно). Отключается SEED_DEMO=false.
 	if getEnv("SEED_DEMO", "true") == "true" {
-		seeder := seed.NewSeeder(userRepo, categoryRepo, supplierRepo, productRepo, purchaseRepo, invoiceRepo)
+		seeder := seed.NewSeeder(userRepo, categoryRepo, supplierRepo, productRepo, purchaseRepo, invoiceRepo, taxRepo, unitRepo, saleRepo)
 		if err := seeder.Run(context.Background()); err != nil {
 			log.Fatalf("seed demo: %v", err)
 		}

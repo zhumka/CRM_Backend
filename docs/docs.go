@@ -1298,6 +1298,194 @@ const docTemplate = `{
                 }
             }
         },
+        "/sales": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Список продаж",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Sale"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Создать продажу",
+                "parameters": [
+                    {
+                        "description": "Данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.SaleInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Sale"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sales/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Получить продажу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Sale"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Обновить продажу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.SaleInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Sale"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "sales"
+                ],
+                "summary": "Удалить продажу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/suppliers": {
             "get": {
                 "security": [
@@ -1468,6 +1656,382 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "ID поставщика",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/taxes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "taxes"
+                ],
+                "summary": "Список налоговых ставок",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Tax"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "taxes"
+                ],
+                "summary": "Создать налоговую ставку",
+                "parameters": [
+                    {
+                        "description": "Данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TaxInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Tax"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/taxes/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "taxes"
+                ],
+                "summary": "Получить налоговую ставку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Tax"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "taxes"
+                ],
+                "summary": "Обновить налоговую ставку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TaxInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Tax"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "taxes"
+                ],
+                "summary": "Удалить налоговую ставку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/units": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "units"
+                ],
+                "summary": "Список единиц измерения",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Unit"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "units"
+                ],
+                "summary": "Создать единицу измерения",
+                "parameters": [
+                    {
+                        "description": "Данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UnitInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Unit"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/units/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "units"
+                ],
+                "summary": "Получить единицу измерения",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Unit"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "units"
+                ],
+                "summary": "Обновить единицу измерения",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UnitInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Unit"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "units"
+                ],
+                "summary": "Удалить единицу измерения",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1773,6 +2337,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "due_date": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -1813,9 +2380,10 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "enum": [
-                        "unpaid",
+                        "draft",
+                        "issued",
                         "paid",
-                        "void"
+                        "overdue"
                     ]
                 }
             }
@@ -1856,8 +2424,17 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "stock": {
+                    "type": "integer"
+                },
                 "supplier_id": {
                     "type": "integer"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -1884,14 +2461,29 @@ const docTemplate = `{
                     "type": "number",
                     "minimum": 0
                 },
+                "stock": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "supplier_id": {
                     "type": "integer"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "unit": {
+                    "type": "string",
+                    "maxLength": 20
                 }
             }
         },
         "model.PurchaseRequest": {
             "type": "object",
             "properties": {
+                "client_name": {
+                    "type": "string"
+                },
                 "comment": {
                     "type": "string"
                 },
@@ -1900,6 +2492,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "number": {
+                    "type": "string"
                 },
                 "product_id": {
                     "type": "integer"
@@ -1925,6 +2520,10 @@ const docTemplate = `{
                 "quantity"
             ],
             "properties": {
+                "client_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
                 "comment": {
                     "type": "string"
                 },
@@ -1946,11 +2545,13 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "enum": [
-                        "new",
-                        "in_progress",
+                        "draft",
+                        "pending",
+                        "checking",
                         "approved",
-                        "rejected",
-                        "completed"
+                        "ordered",
+                        "completed",
+                        "rejected"
                     ]
                 }
             }
@@ -1962,6 +2563,14 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "full_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
                 "password": {
                     "type": "string",
                     "maxLength": 72,
@@ -2022,6 +2631,69 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 150
+                }
+            }
+        },
+        "model.Sale": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "installation_status": {
+                    "type": "string"
+                },
+                "invoice_id": {
+                    "type": "integer"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "sold_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SaleInput": {
+            "type": "object",
+            "required": [
+                "product_name"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "installation_status": {
+                    "type": "string",
+                    "enum": [
+                        "not_required",
+                        "scheduled",
+                        "completed"
+                    ]
+                },
+                "invoice_id": {
+                    "type": "integer"
+                },
+                "product_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 0
                 }
             }
         },
@@ -2141,6 +2813,48 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Tax": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TaxInput": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "rate": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
         "model.TopProduct": {
             "type": "object",
             "properties": {
@@ -2158,9 +2872,59 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Unit": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "short_name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UnitInput": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "short_name": {
+                    "type": "string",
+                    "maxLength": 20
+                }
+            }
+        },
         "model.UpdateUserInput": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "full_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
                 "password": {
                     "type": "string",
                     "maxLength": 72,
@@ -2172,6 +2936,13 @@ const docTemplate = `{
                         "admin",
                         "user"
                     ]
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "blocked"
+                    ]
                 }
             }
         },
@@ -2181,10 +2952,19 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "role": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "updated_at": {

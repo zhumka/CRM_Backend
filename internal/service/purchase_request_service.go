@@ -31,11 +31,12 @@ func (s *PurchaseRequestService) Create(ctx context.Context, userID int, in mode
 		return nil, err // ErrNotFound, если продукт недоступен
 	}
 	pr := &model.PurchaseRequest{
-		UserID:    userID,
-		ProductID: in.ProductID,
-		Quantity:  in.Quantity,
-		Status:    model.PurchaseStatusNew,
-		Comment:   in.Comment,
+		UserID:     userID,
+		ClientName: in.ClientName,
+		ProductID:  in.ProductID,
+		Quantity:   in.Quantity,
+		Status:     model.PurchaseStatusPending,
+		Comment:    in.Comment,
 	}
 	if err := s.repo.Create(ctx, pr); err != nil {
 		return nil, err

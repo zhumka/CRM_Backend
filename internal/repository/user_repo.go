@@ -22,11 +22,14 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 
 // Create сохраняет нового пользователя и возвращает его id, created_at, updated_at.
 func (r *UserRepository) Create(ctx context.Context, u *model.User) error {
+	if u.Status == "" {
+		u.Status = model.UserStatusActive
+	}
 	const q = `
-		INSERT INTO users (username, password_hash, role)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (username, password_hash, full_name, email, role, status)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at, updated_at`
-	err := r.db.QueryRowxContext(ctx, q, u.Username, u.PasswordHash, u.Role).
+	err := r.db.QueryRowxContext(ctx, q, u.Username, u.PasswordHash, u.FullName, u.Email, u.Role, u.Status).
 		Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -70,17 +73,20 @@ func (r *UserRepository) List(ctx context.Context) ([]model.User, error) {
 	return users, nil
 }
 
-// Update обновляет хеш пароля и/или роль; nil-поля не изменяются.
-func (r *UserRepository) Update(ctx context.Context, id int, passwordHash, role *string) (*model.User, error) {
+// Update обновляет переданные поля пользователя; nil-поля не изменяются.
+func (r *UserRepository) Update(ctx context.Context, id int, f model.UserUpdate) (*model.User, error) {
 	const q = `
 		UPDATE users
 		SET password_hash = COALESCE($2, password_hash),
-		    role          = COALESCE($3, role),
+		    full_name     = COALESCE($3, full_name),
+		    email         = COALESCE($4, email),
+		    role          = COALESCE($5, role),
+		    status        = COALESCE($6, status),
 		    updated_at    = now()
 		WHERE id = $1
 		RETURNING *`
 	var u model.User
-	if err := r.db.GetContext(ctx, &u, q, id, passwordHash, role); err != nil {
+	if err := r.db.GetContext(ctx, &u, q, id, f.PasswordHash, f.FullName, f.Email, f.Role, f.Status); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, model.ErrNotFound
 		}

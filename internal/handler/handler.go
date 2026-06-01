@@ -22,6 +22,9 @@ type Handler struct {
 	invoices   *service.InvoiceService
 	analytics  *service.AnalyticsService
 	reports    *service.ReportService
+	taxes      *service.TaxService
+	units      *service.UnitService
+	sales      *service.SaleService
 	jwt        *jwtutil.Manager
 }
 
@@ -36,6 +39,9 @@ type Services struct {
 	Invoices   *service.InvoiceService
 	Analytics  *service.AnalyticsService
 	Reports    *service.ReportService
+	Taxes      *service.TaxService
+	Units      *service.UnitService
+	Sales      *service.SaleService
 }
 
 func NewHandler(s Services, jwt *jwtutil.Manager) *Handler {
@@ -49,6 +55,9 @@ func NewHandler(s Services, jwt *jwtutil.Manager) *Handler {
 		invoices:   s.Invoices,
 		analytics:  s.Analytics,
 		reports:    s.Reports,
+		taxes:      s.Taxes,
+		units:      s.Units,
+		sales:      s.Sales,
 		jwt:        jwt,
 	}
 }
@@ -110,6 +119,21 @@ func (h *Handler) Router() *gin.Engine {
 		h.registerCRUD(authorized, "/invoices",
 			h.listInvoices, h.getInvoice,
 			h.createInvoice, h.updateInvoice, h.deleteInvoice)
+
+		// Налоговые ставки.
+		h.registerCRUD(authorized, "/taxes",
+			h.listTaxes, h.getTax,
+			h.createTax, h.updateTax, h.deleteTax)
+
+		// Единицы измерения.
+		h.registerCRUD(authorized, "/units",
+			h.listUnits, h.getUnit,
+			h.createUnit, h.updateUnit, h.deleteUnit)
+
+		// Продажи.
+		h.registerCRUD(authorized, "/sales",
+			h.listSales, h.getSale,
+			h.createSale, h.updateSale, h.deleteSale)
 
 		// Заявки на закупку — доступны и пользователю, и администратору.
 		pr := authorized.Group("/purchase-requests")

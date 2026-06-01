@@ -14,7 +14,7 @@ type UserStore interface {
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	GetByID(ctx context.Context, id int) (*model.User, error)
 	List(ctx context.Context) ([]model.User, error)
-	Update(ctx context.Context, id int, passwordHash, role *string) (*model.User, error)
+	Update(ctx context.Context, id int, f model.UserUpdate) (*model.User, error)
 	Delete(ctx context.Context, id int) error
 	Count(ctx context.Context) (int, error)
 }
@@ -41,7 +41,14 @@ func (s *AuthService) Register(ctx context.Context, in model.RegisterInput) (*mo
 		return nil, err
 	}
 
-	u := &model.User{Username: in.Username, PasswordHash: pwdHash, Role: role}
+	u := &model.User{
+		Username:     in.Username,
+		PasswordHash: pwdHash,
+		FullName:     in.FullName,
+		Email:        in.Email,
+		Role:         role,
+		Status:       model.UserStatusActive,
+	}
 	if err := s.users.Create(ctx, u); err != nil {
 		return nil, err
 	}
@@ -61,6 +68,10 @@ func (s *AuthService) Login(ctx context.Context, in model.LoginInput) (*model.Au
 
 	if !hash.Check(in.Password, u.PasswordHash) {
 		return nil, model.ErrInvalidCredentials
+	}
+
+	if u.Status == model.UserStatusBlocked {
+		return nil, model.ErrForbidden
 	}
 
 	return s.tokenResponse(u)

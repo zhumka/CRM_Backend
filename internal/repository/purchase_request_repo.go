@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -20,13 +21,29 @@ func NewPurchaseRequestRepository(db *sqlx.DB) *PurchaseRequestRepository {
 }
 
 func (r *PurchaseRequestRepository) Create(ctx context.Context, pr *model.PurchaseRequest) error {
-	const q = `
-		INSERT INTO purchase_requests (user_id, product_id, quantity, status, comment)
-		VALUES ($1, $2, $3, $4, $5)
+	// Номер заявки формируется из её id (REQ-0001): вставляем, затем проставляем
+	// номер вторым запросом в одной транзакции.
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	const insertQ = `
+		INSERT INTO purchase_requests (user_id, client_name, product_id, quantity, status, comment)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at, updated_at`
-	err := r.db.QueryRowxContext(ctx, q, pr.UserID, pr.ProductID, pr.Quantity, pr.Status, pr.Comment).
-		Scan(&pr.ID, &pr.CreatedAt, &pr.UpdatedAt)
-	return mapFKError(err)
+	if err := tx.QueryRowxContext(ctx, insertQ,
+		pr.UserID, pr.ClientName, pr.ProductID, pr.Quantity, pr.Status, pr.Comment).
+		Scan(&pr.ID, &pr.CreatedAt, &pr.UpdatedAt); err != nil {
+		return mapFKError(err)
+	}
+
+	pr.Number = fmt.Sprintf("REQ-%04d", pr.ID)
+	if _, err := tx.ExecContext(ctx, `UPDATE purchase_requests SET number = $2 WHERE id = $1`, pr.ID, pr.Number); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // List возвращает заявки. Если ownerID != nil — только заявки этого пользователя.

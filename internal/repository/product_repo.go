@@ -21,11 +21,15 @@ func NewProductRepository(db *sqlx.DB) *ProductRepository {
 }
 
 func (r *ProductRepository) Create(ctx context.Context, p *model.Product) error {
+	if p.Unit == "" {
+		p.Unit = "шт"
+	}
 	const q = `
-		INSERT INTO products (name, description, price, category_id, supplier_id)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO products (name, description, price, stock, unit, tax_rate, category_id, supplier_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, created_at, updated_at`
-	err := r.db.QueryRowxContext(ctx, q, p.Name, p.Description, p.Price, p.CategoryID, p.SupplierID).
+	err := r.db.QueryRowxContext(ctx, q,
+		p.Name, p.Description, p.Price, p.Stock, p.Unit, p.TaxRate, p.CategoryID, p.SupplierID).
 		Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 	return mapFKError(err)
 }
@@ -60,11 +64,17 @@ func (r *ProductRepository) GetByID(ctx context.Context, id int) (*model.Product
 func (r *ProductRepository) Update(ctx context.Context, id int, in model.ProductInput) (*model.Product, error) {
 	const q = `
 		UPDATE products
-		SET name = $2, description = $3, price = $4, category_id = $5, supplier_id = $6, updated_at = now()
+		SET name = $2, description = $3, price = $4, stock = $5, unit = $6,
+		    tax_rate = $7, category_id = $8, supplier_id = $9, updated_at = now()
 		WHERE id = $1
 		RETURNING *`
 	var p model.Product
-	err := r.db.GetContext(ctx, &p, q, id, in.Name, in.Description, in.Price, in.CategoryID, in.SupplierID)
+	unit := in.Unit
+	if unit == "" {
+		unit = "шт"
+	}
+	err := r.db.GetContext(ctx, &p, q, id, in.Name, in.Description, in.Price,
+		in.Stock, unit, in.TaxRate, in.CategoryID, in.SupplierID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, model.ErrNotFound

@@ -33,24 +33,36 @@ func (s *UserService) Create(ctx context.Context, in model.RegisterInput) (*mode
 	if err != nil {
 		return nil, err
 	}
-	u := &model.User{Username: in.Username, PasswordHash: pwdHash, Role: role}
+	u := &model.User{
+		Username:     in.Username,
+		PasswordHash: pwdHash,
+		FullName:     in.FullName,
+		Email:        in.Email,
+		Role:         role,
+		Status:       model.UserStatusActive,
+	}
 	if err := s.users.Create(ctx, u); err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
-// Update меняет пароль и/или роль пользователя.
+// Update меняет пароль, ФИО, email, роль и/или статус пользователя.
 func (s *UserService) Update(ctx context.Context, id int, in model.UpdateUserInput) (*model.User, error) {
-	var pwdHash *string
+	fields := model.UserUpdate{
+		FullName: in.FullName,
+		Email:    in.Email,
+		Role:     in.Role,
+		Status:   in.Status,
+	}
 	if in.Password != nil {
 		h, err := hash.Hash(*in.Password)
 		if err != nil {
 			return nil, err
 		}
-		pwdHash = &h
+		fields.PasswordHash = &h
 	}
-	return s.users.Update(ctx, id, pwdHash, in.Role)
+	return s.users.Update(ctx, id, fields)
 }
 
 func (s *UserService) Delete(ctx context.Context, id int) error {
@@ -73,6 +85,8 @@ func (s *UserService) EnsureAdmin(ctx context.Context, username, password string
 	return s.users.Create(ctx, &model.User{
 		Username:     username,
 		PasswordHash: pwdHash,
+		FullName:     "Администратор",
 		Role:         model.RoleAdmin,
+		Status:       model.UserStatusActive,
 	})
 }

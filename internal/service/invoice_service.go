@@ -23,7 +23,7 @@ func NewInvoiceService(repo InvoiceStore) *InvoiceService { return &InvoiceServi
 func (s *InvoiceService) Create(ctx context.Context, in model.InvoiceInput) (*model.Invoice, error) {
 	status := in.Status
 	if status == "" {
-		status = model.InvoiceStatusUnpaid
+		status = model.InvoiceStatusIssued
 	}
 	inv := &model.Invoice{
 		Number:            in.Number,
