@@ -56,7 +56,7 @@ func NewHandler(s Services, jwt *jwtutil.Manager) *Handler {
 // Router конфигурирует все маршруты API.
 func (h *Handler) Router() *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(gin.Logger(), gin.Recovery(), corsMiddleware())
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
