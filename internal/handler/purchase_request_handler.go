@@ -104,6 +104,30 @@ func (h *Handler) updatePurchaseRequestStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// createSaleFromRequest godoc
+// @Summary  Оформить продажу по заявке
+// @Description Создаёт продажу по одобренной заявке и переводит заявку в completed. Только администратор.
+// @Tags     purchase-requests
+// @Produce  json
+// @Security BearerAuth
+// @Param    id   path      int  true  "ID заявки"
+// @Success  201  {object}  model.Sale
+// @Failure  400  {object}  errorResponse
+// @Failure  404  {object}  errorResponse
+// @Router   /purchase-requests/{id}/sale [post]
+func (h *Handler) createSaleFromRequest(c *gin.Context) {
+	id, ok := parseID(c)
+	if !ok {
+		return
+	}
+	sale, err := h.purchases.CreateSale(c.Request.Context(), id)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, sale)
+}
+
 // deletePurchaseRequest godoc
 // @Summary  Удалить заявку
 // @Tags     purchase-requests

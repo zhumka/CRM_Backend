@@ -46,6 +46,30 @@ func (h *Handler) getInvoice(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// downloadInvoice godoc
+// @Summary  Скачать счёт-фактуру
+// @Description Отдаёт счёт-фактуру как HTML-документ (можно открыть и распечатать/сохранить в PDF)
+// @Tags     invoices
+// @Produce  text/html
+// @Security BearerAuth
+// @Param    id   path      int  true  "ID счёта"
+// @Success  200  {string}  string  "HTML-документ"
+// @Failure  404  {object}  errorResponse
+// @Router   /invoices/{id}/document [get]
+func (h *Handler) downloadInvoice(c *gin.Context) {
+	id, ok := parseID(c)
+	if !ok {
+		return
+	}
+	filename, content, err := h.invoices.Document(c.Request.Context(), id)
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
+	c.Data(http.StatusOK, "text/html; charset=utf-8", content)
+}
+
 // createInvoice godoc
 // @Summary  Создать счёт-фактуру
 // @Tags     invoices

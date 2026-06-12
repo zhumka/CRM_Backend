@@ -84,6 +84,70 @@ func (r *ProductRepository) Update(ctx context.Context, id int, in model.Product
 	return &p, nil
 }
 
+// TaxRateByName возвращает налоговую ставку продукта по имени.
+// Второй результат — найден ли такой продукт (если нет, ставка по умолчанию 0).
+func (r *ProductRepository) TaxRateByName(ctx context.Context, name string) (float64, bool, error) {
+	var rate float64
+	const q = `SELECT tax_rate FROM products WHERE name = $1 ORDER BY id LIMIT 1`
+	err := r.db.GetContext(ctx, &rate, q, name)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, false, nil
+		}
+		return 0, false, err
+	}
+	return rate, true, nil
+}
+
+// DecreaseStockByName атомарно списывает qty единиц товара по имени.
+// Возвращает ErrInsufficientStock, если на складе недостаточно товара,
+// и ErrNotFound, если товар с таким именем отсутствует.
+func (r *ProductRepository) DecreaseStockByName(ctx context.Context, name string, qty int) error {
+	if qty <= 0 {
+		return nil
+	}
+	const q = `
+		UPDATE products
+		SET stock = stock - $2, updated_at = now()
+		WHERE id = (SELECT id FROM products WHERE name = $1 ORDER BY id LIMIT 1)
+		  AND stock >= $2`
+	res, err := r.db.ExecContext(ctx, q, name, qty)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		// Ноль затронутых строк: товара нет либо не хватает остатка — различаем.
+		var exists bool
+		if err := r.db.GetContext(ctx, &exists,
+			`SELECT EXISTS(SELECT 1 FROM products WHERE name = $1)`, name); err != nil {
+			return err
+		}
+		if !exists {
+			return model.ErrNotFound
+		}
+		return model.ErrInsufficientStock
+	}
+	return nil
+}
+
+// IncreaseStockByName возвращает qty единиц товара на склад по имени.
+// Используется при отмене/изменении продажи; отсутствие товара не считается ошибкой.
+func (r *ProductRepository) IncreaseStockByName(ctx context.Context, name string, qty int) error {
+	if qty <= 0 {
+		return nil
+	}
+	const q = `
+		UPDATE products
+		SET stock = stock + $2, updated_at = now()
+		WHERE id = (SELECT id FROM products WHERE name = $1 ORDER BY id LIMIT 1)`
+	_, err := r.db.ExecContext(ctx, q, name, qty)
+	return err
+}
+
 func (r *ProductRepository) Delete(ctx context.Context, id int) error {
 	res, err := r.db.ExecContext(ctx, `DELETE FROM products WHERE id = $1`, id)
 	if err != nil {

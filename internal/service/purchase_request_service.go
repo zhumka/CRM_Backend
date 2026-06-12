@@ -15,14 +15,52 @@ type PurchaseRequestStore interface {
 	Delete(ctx context.Context, id int) error
 }
 
+// SaleCreator — создание продажи (реализуется SaleService).
+type SaleCreator interface {
+	Create(ctx context.Context, in model.SaleInput) (*model.Sale, error)
+}
+
 // PurchaseRequestService реализует подсистему обработки заявок на закупку.
 type PurchaseRequestService struct {
 	repo     PurchaseRequestStore
 	products ProductStore
+	sales    SaleCreator
 }
 
-func NewPurchaseRequestService(repo PurchaseRequestStore, products ProductStore) *PurchaseRequestService {
-	return &PurchaseRequestService{repo: repo, products: products}
+func NewPurchaseRequestService(repo PurchaseRequestStore, products ProductStore, sales SaleCreator) *PurchaseRequestService {
+	return &PurchaseRequestService{repo: repo, products: products, sales: sales}
+}
+
+// CreateSale оформляет продажу по одобренной заявке и переводит заявку в completed.
+// Данные продажи берутся из заявки и продукта; ставка налога — из продукта.
+func (s *PurchaseRequestService) CreateSale(ctx context.Context, id int) (*model.Sale, error) {
+	pr, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	// Продажу можно оформить только по одобренной заявке.
+	if pr.Status != model.PurchaseStatusApproved {
+		return nil, model.ErrRequestNotApproved
+	}
+	prod, err := s.products.GetByID(ctx, pr.ProductID)
+	if err != nil {
+		return nil, err
+	}
+	// Сумма — база без налога: цена × количество. Налог и склад обрабатывает SaleService.
+	in := model.SaleInput{
+		ProductName: prod.Name,
+		Quantity:    pr.Quantity,
+		Amount:      prod.Price * float64(pr.Quantity),
+	}
+	sale, err := s.sales.Create(ctx, in)
+	if err != nil {
+		return nil, err // в т.ч. ErrInsufficientStock — заявка остаётся approved
+	}
+	// Автопереход статуса: заявка выполнена.
+	if _, err := s.repo.UpdateStatus(ctx, id, model.PurchaseStatusCompleted); err != nil {
+		return nil, err
+	}
+	return sale, nil
 }
 
 // Create создаёт заявку от имени пользователя; проверяет существование продукта.

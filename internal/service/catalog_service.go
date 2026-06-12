@@ -95,6 +95,9 @@ func (s *ProductService) Create(ctx context.Context, in model.ProductInput) (*mo
 		Name:        in.Name,
 		Description: in.Description,
 		Price:       in.Price,
+		Stock:       in.Stock,
+		Unit:        in.Unit,
+		TaxRate:     in.TaxRate,
 		CategoryID:  in.CategoryID,
 		SupplierID:  in.SupplierID,
 	}

@@ -95,6 +95,7 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	productService := service.NewProductService(productRepo)
 	analyticsService := service.NewAnalyticsService(analyticsRepo)
+	saleService := service.NewSaleService(saleRepo, productRepo, invoiceRepo, purchaseRepo, taxRepo)
 
 	services := handler.Services{
 		Auth:       service.NewAuthService(userRepo, jwtManager),
@@ -102,13 +103,13 @@ func main() {
 		Categories: service.NewCategoryService(categoryRepo),
 		Suppliers:  service.NewSupplierService(supplierRepo),
 		Products:   productService,
-		Purchases:  service.NewPurchaseRequestService(purchaseRepo, productRepo),
-		Invoices:   service.NewInvoiceService(invoiceRepo),
+		Purchases:  service.NewPurchaseRequestService(purchaseRepo, productRepo, saleService),
+		Invoices:   service.NewInvoiceService(invoiceRepo, saleRepo, purchaseRepo, productRepo),
 		Analytics:  analyticsService,
 		Reports:    service.NewReportService(reportRepo, analyticsService),
 		Taxes:      service.NewTaxService(taxRepo),
 		Units:      service.NewUnitService(unitRepo),
-		Sales:      service.NewSaleService(saleRepo),
+		Sales:      saleService,
 	}
 
 	// Создаём администратора по умолчанию при первом запуске.

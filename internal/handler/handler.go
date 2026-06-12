@@ -119,6 +119,8 @@ func (h *Handler) Router() *gin.Engine {
 		h.registerCRUD(authorized, "/invoices",
 			h.listInvoices, h.getInvoice,
 			h.createInvoice, h.updateInvoice, h.deleteInvoice)
+		// Скачивание документа счёта-фактуры — любому авторизованному.
+		authorized.GET("/invoices/:id/document", h.downloadInvoice)
 
 		// Налоговые ставки.
 		h.registerCRUD(authorized, "/taxes",
@@ -143,6 +145,7 @@ func (h *Handler) Router() *gin.Engine {
 			pr.GET("/:id", h.getPurchaseRequest)
 			pr.DELETE("/:id", h.deletePurchaseRequest)
 			pr.PATCH("/:id/status", adminOnly(), h.updatePurchaseRequestStatus)
+			pr.POST("/:id/sale", adminOnly(), h.createSaleFromRequest)
 		}
 
 		// Аналитика — доступна любому авторизованному пользователю.

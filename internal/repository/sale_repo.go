@@ -21,11 +21,11 @@ func NewSaleRepository(db *sqlx.DB) *SaleRepository {
 
 func (r *SaleRepository) Create(ctx context.Context, s *model.Sale) error {
 	const q = `
-		INSERT INTO sales (invoice_id, product_name, quantity, amount, installation_status)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO sales (invoice_id, product_name, quantity, amount, tax_rate, installation_status)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, sold_at, created_at, updated_at`
 	err := r.db.QueryRowxContext(ctx, q,
-		s.InvoiceID, s.ProductName, s.Quantity, s.Amount, s.InstallationStatus).
+		s.InvoiceID, s.ProductName, s.Quantity, s.Amount, s.TaxRate, s.InstallationStatus).
 		Scan(&s.ID, &s.SoldAt, &s.CreatedAt, &s.UpdatedAt)
 	return mapFKError(err)
 }
@@ -49,15 +49,15 @@ func (r *SaleRepository) GetByID(ctx context.Context, id int) (*model.Sale, erro
 	return &s, nil
 }
 
-func (r *SaleRepository) Update(ctx context.Context, id int, in model.SaleInput, status string) (*model.Sale, error) {
+func (r *SaleRepository) Update(ctx context.Context, id int, in model.SaleInput, status string, taxRate float64) (*model.Sale, error) {
 	const q = `
 		UPDATE sales
 		SET invoice_id = $2, product_name = $3, quantity = $4, amount = $5,
-		    installation_status = $6, updated_at = now()
+		    tax_rate = $6, installation_status = $7, updated_at = now()
 		WHERE id = $1
 		RETURNING *`
 	var s model.Sale
-	err := r.db.GetContext(ctx, &s, q, id, in.InvoiceID, in.ProductName, in.Quantity, in.Amount, status)
+	err := r.db.GetContext(ctx, &s, q, id, in.InvoiceID, in.ProductName, in.Quantity, in.Amount, taxRate, status)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, model.ErrNotFound
@@ -73,6 +73,28 @@ func (r *SaleRepository) Delete(ctx context.Context, id int) error {
 		return err
 	}
 	return ensureAffected(res)
+}
+
+// ListByInvoice возвращает продажи, привязанные к счёту (позиции для документа).
+func (r *SaleRepository) ListByInvoice(ctx context.Context, invoiceID int) ([]model.Sale, error) {
+	items := []model.Sale{}
+	const q = `SELECT * FROM sales WHERE invoice_id = $1 ORDER BY id`
+	if err := r.db.SelectContext(ctx, &items, q, invoiceID); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// SumAmountByInvoice возвращает сумму продаж, привязанных к счёту,
+// исключая продажу excludeID (0 — ничего не исключать, например при создании).
+func (r *SaleRepository) SumAmountByInvoice(ctx context.Context, invoiceID, excludeID int) (float64, error) {
+	var total float64
+	// Сумма продаж по счёту считается с налогом (amount + налог).
+	const q = `SELECT COALESCE(SUM(amount + amount * tax_rate / 100), 0) FROM sales WHERE invoice_id = $1 AND id <> $2`
+	if err := r.db.GetContext(ctx, &total, q, invoiceID, excludeID); err != nil {
+		return 0, err
+	}
+	return total, nil
 }
 
 func (r *SaleRepository) Count(ctx context.Context) (int, error) {

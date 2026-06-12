@@ -26,6 +26,10 @@ func respondError(c *gin.Context, err error) {
 		c.JSON(http.StatusUnauthorized, errorResponse{Error: err.Error()})
 	case errors.Is(err, model.ErrForbidden):
 		c.JSON(http.StatusForbidden, errorResponse{Error: err.Error()})
+	case errors.Is(err, model.ErrInsufficientStock),
+		errors.Is(err, model.ErrRequestNotApproved),
+		errors.Is(err, model.ErrInvoiceAmountExceeded):
+		c.JSON(http.StatusBadRequest, errorResponse{Error: err.Error()})
 	default:
 		c.JSON(http.StatusInternalServerError, errorResponse{Error: "internal server error"})
 	}
